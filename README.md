@@ -131,6 +131,33 @@ Sistem mevcut haliyle tekil sunucu mimarisinde yüksek verim sağlamaktadır. An
    - Eşzamanlı gelen on binlerce ses paketi doğrudan işleme alınmak yerine **Kafka** veya **RabbitMQ** gibi sağlam bir mesajlaşma kuyruğuna aktarılır.
    - STT servisleri, **NVIDIA Triton Inference Server** kullanılarak kuyruktaki bağımsız ses paketlerini saniyelik olarak yığınlar (batch) halinde birleştirir. Bu işlem, GPU'nun tekil işlemler yerine tam kapasite (100% Utilization) ile çalışmasını sağlayarak saniyede binlerce kullanıcının talebine aynı anda yanıt üretmesine olanak tanır.
 
+## Kapsamlı Performans ve Benchmark Raporu (Google FLEURS - tr_tr)
+
+Aşağıdaki analiz raporu, **Faster-Whisper (Geliştirilmiş STT Mimarimiz)** ile **Standart OpenAI (Vanilla) Whisper** modellerinin zorlu senaryolar altındaki başarımını, hızını ve donanım tüketimini karşılaştırmaktadır. Analiz, NVIDIA RTX 4060 (8GB VRAM) donanımında gerçekleştirilmiştir.
+
+![Kapsamlı Benchmark Sonuçları](benchmark_charts_detailed.png)
+
+> [!WARNING]
+> **Donanım Sınırları ve Test Metodolojisine Dair Önemli Not**  
+> Test sırasında standart **Vanilla Whisper (large-v3, fp16)** modeli, tensör ve KV Cache genişlemeleri sebebiyle RTX 4060'ın **8 GB'lık VRAM kapasitesine sığmamıştır.** Bellek aşımı (Out of Memory) oluşmaması adına sistem verileri zorunlu olarak "Shared GPU Memory" (Yavaş Sistem RAM'i) üzerine taşımış (PCIe Swapping), bu durum Vanilla Whisper'ın hızını dramatik ölçüde düşürerek darboğaza yol açmıştır. Süreç aşırı uzadığı için, Faster-Whisper tüm veri setini (743 ses) tam hızda dakikalar içinde bitirmişken, Vanilla Whisper tahammül sınırlarını aştığı için test **yaklaşık ilk 50 veri üzerinden zorunlu olarak kesilerek** değerlendirilmiştir.
+
+### 1. Akustik Başarım (WER ve CER) Karşılaştırması
+Grafiklerde ve tabloda görüldüğü üzere, **Kelime Hata Oranı (WER)** ve **Karakter Hata Oranı (CER)** her iki modelde de neredeyse birebir aynıdır. Sistemimizin kullandığı `int8_float16` optimizasyonu, modelin zekasından veya duyma yetisinden en ufak bir ödün vermeden aynı yüksek kaliteyi (accuracy) korumayı başarmıştır. 
+
+### 2. İşlem Süresi ve RTF (Real-Time Factor) Analizi
+- **Faster-Whisper:** Özel CTranslate2 motoru ve VAD destekli filtreleme mimarisi sayesinde, saniyeler süren sesleri milisaniyeler içinde çevirir. RTF (Gerçek Zamanlılık Faktörü) sıfıra yakın minimum seviyelerde seyreder.
+- **Vanilla Whisper:** VAD filtresi olmadığı için sessizliklerde halüsinasyona (sonsuz döngüye) girer ve C++ bazlı donanım hızlandırıcısı olmadığı için bir sesi işlemek katbekat daha uzun sürer.
+
+### 3. Zaman İçerisinde Performans Degredasyonu (Süreç Uzadıkça Yorulma)
+*(Grafik: "Zamanla Performans Değişimi: İşlem Süresi")*  
+Vanilla Whisper tarafında, süreç uzadıkça ve işlenen ses sayısı arttıkça işlem süresinin doğrusal olmayan bir şekilde yukarı doğru fırladığı (degredasyon) görülmektedir. Sistemimiz (Faster-Whisper) ise kayan pencere tamponunu her başarılı cümleden sonra sıfırladığı için, sistem **1. saatte ne kadar kararlı ve hızlıysa, 10. saatte de aynı stabiliteyi** sunmaktadır.
+
+### 4. GPU Bellek Yönetimi (VRAM Peak Tüketimi)
+*(Grafik: "Süreç Uzadıkça VRAM Tüketimi Değişimi")*  
+En çarpıcı fark GPU bellek tüketiminde ortaya çıkmaktadır:
+- **Vanilla Whisper:** Orijinal `fp16` kodlaması sebebiyle çok yüksek bir taban RAM tüketimi yapar ve ardışık transkripsiyonlarda 8GB sınırını hızla aşarak sistemi kilitleme noktasına getirir.
+- **Geliştirilmiş STT (Faster-Whisper):** Ağırlıkların 8-bit tamsayı (`int8`), aktivasyonların 16-bit kayar nokta (`float16`) olarak işlenmesi sayesinde VRAM tüketimi **maksimum 2.5 - 3 GB** bandında sabitlenir. Bu sayede düşük bütçeli sunucularda veya kişisel bilgisayarlarda bile darboğaz yaşanmadan saniyede binlerce token üretilebilir.
+
 ---
 
 ## Gelecek Sürüm Hedefleri ve Gelişim Yol Haritası

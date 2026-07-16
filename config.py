@@ -59,7 +59,7 @@ class STTConfig:
 
     # ── Ses ────────────────────────────────────────────────────
     sample_rate: int = 16000
-    chunk_duration_s: float = 1.5  # Düşük gecikme için 1s (eskiden 1.5)
+    chunk_duration_s: float = 1  # Düşük gecikme için 1s (eskiden 1.5)
     max_buffer_s: float = 8.0  # Kayan pencere sınırı (8s → maks ~800ms işlem süresi)
     energy_threshold: float = 0.005  # RMS enerji kapısı
     end_of_speech_s: float = 1.2  # Konuşma sonu sessizlik eşiği (saniye) - Nefes alma/düşünme payı için 1.2s idealdir.
@@ -90,6 +90,6 @@ class STTConfig:
 
     # ── Ollama Dolgu Kelimesi (Filler) Temizleme ───────────────
     use_ollama: bool = False
-    ollama_url: str = "http://localhost:11434/api/generate"
+    ollama_url: str = "http://127.0.0.1:11434/api/generate"
     ollama_model: str = "qwen3.5:0.8b"
     silence_reset_s: float = 15.0  # Otomatik sıfırlama süresi (kullanım dışı)

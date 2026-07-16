@@ -6,3 +6,5 @@ __pycache__/
 *.wav
 *.mp3
 *.flac
+benchmark_cache/
+*.csv
