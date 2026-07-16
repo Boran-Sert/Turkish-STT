@@ -137,3 +137,9 @@ Sistem mevcut haliyle tekil sunucu mimarisinde yüksek verim sağlamaktadır. An
 
 ### 🔊 Yapay Zeka Destekli Arka Plan Gürültü İptali (AI Noise Cancellation)
 Sistemin çağrı merkezleri, yoğun ofis alanları veya dış mekanlar gibi yüksek gürültülü ortamlarda kullanılması durumunda klavye sesleri, uğultular veya dış konuşmalar transkripsiyon kalitesini olumsuz etkileyebilmektedir. Gelecek mimari güncellemesinde, ses sinyali STT motoruna iletilmeden hemen önce derin öğrenme tabanlı bir akustik filtreleme (Örn: **DeepFilterNet** veya **RNNoise**) modülünden geçirilecektir. Bu ön işleme adımı sayesinde girdi sesinin stüdyo kalitesine yaklaştırılması ve modelin doğruluğunun ekstrem koşullarda bile maksimum seviyede tutulması hedeflenmektedir.
+
+---
+
+> [!NOTE]  
+> **Sektörel Uyumluluk Notu:**  
+> Geliştirilen bu mimari yalnızca bankacılık sektörü ile sınırlı değildir. Konfigürasyon dosyasındaki (`config.py`) `initial_prompt` (ön yönlendirme metni) parametresi ilgili sektörün terminolojisine göre (sağlık, hukuk, e-ticaret, lojistik vb.) güncellenerek, sistem kolaylıkla her türlü iş koluna ve farklı terminolojilere adapte edilebilir.
