@@ -1,0 +1,6 @@
+# ── Core STT Dependencies ──────────────────────────────────────────────────
+faster-whisper>=1.0.0
+numpy>=1.22.0
+sounddevice>=0.4.6
+requests>=2.28.0
+
